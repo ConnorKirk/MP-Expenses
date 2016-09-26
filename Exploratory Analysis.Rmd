@@ -1,0 +1,71 @@
+---
+title: "Exploratory Analysis"
+author: "Connor Kirkpatrick"
+date: "26 September 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(ggplot2)
+
+#Read in the 2015 Data
+
+expenses2015 <- read_csv("Data/DataDownload_2015.csv", col_types = cols(
+            Date = col_date(format = "%d/%m/%Y"),
+            `Claim No.` = col_character(),
+            `Reason If Not Paid` = col_character(),
+            `Amount Not Paid` = col_double()
+))
+
+
+# Convert some columns to factor
+
+#To do - Convert this to an elegant apply function...
+# `MP's Name`, `MP's Constituency`, Category,`Expense Type`, From, To, Travel
+expenses2015$`MP's Name` <- as.factor(expenses2015$`MP's Name`)
+expenses2015$`MP's Constituency` <- as.factor(expenses2015$`MP's Constituency`)
+expenses2015$Category <- as.factor(expenses2015$Category)
+expenses2015$`Expense Type` <- as.factor(expenses2015$`Expense Type`)
+expenses2015$`MP's Name` <- as.factor(expenses2015$`MP's Name`)
+expenses2015$From <- as.factor(expenses2015$From)
+expenses2015$To <- as.factor(expenses2015$To)
+expenses2015$Travel <- as.factor(expenses2015$Travel)
+expenses2015$Status <- as.factor(expenses2015$Status)
+expenses2015$`Reason If Not Paid` <- as.factor(expenses2015$`Reason If Not Paid`)
+
+
+
+```
+
+
+
+```{r}
+#What was the largest claim?
+max(expenses2015$`Amount Claimed`)
+
+# Did it match the largest amount paid?
+max(expenses2015$`Amount Paid`)
+
+#Vector of whether the amount claimed equals the amount paid
+ac_to_ap <- expenses2015$`Amount Claimed` == expenses2015$`Amount Paid`
+
+#ratio of rejected expenses
+mean(ac_to_ap)
+table(ac_to_ap)
+rejected <- subset(expenses2015, !ac_to_ap)
+mean(rejected$`Amount Claimed`)
+str(rejected$`Reason If Not Paid`)
+
+#reasons why they weren't paid
+levels(rejected$`Reason If Not Paid`)
+
+#Stats
+table((rejected$`Reason If Not Paid`))
+
+table(expenses2015$`Reason If Not Paid`)
+
+
+ggplot(rejected) + geom_bar(aes(x = rejected$`Reason If Not Paid`)) + labs(x = "Reason not paid", y = "Frequency")
