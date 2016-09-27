@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(readr)
 library(ggplot2)
+library(knitr)
+library(dplyr)
 
 #Read in the 2015 Data
 
@@ -43,6 +45,8 @@ expenses2015$`Reason If Not Paid` <- as.factor(expenses2015$`Reason If Not Paid`
 
 
 ```{r}
+
+
 #What was the largest claim?
 max(expenses2015$`Amount Claimed`)
 
@@ -68,4 +72,92 @@ table((rejected$`Reason If Not Paid`))
 table(expenses2015$`Reason If Not Paid`)
 
 
-ggplot(rejected) + geom_bar(aes(x = rejected$`Reason If Not Paid`)) + labs(x = "Reason not paid", y = "Frequency")
+ggplot(rejected) + geom_bar(aes(x = rejected$`Reason If Not Paid`, fill = rejected$`Reason If Not Paid` )) + labs(x = "Reason not paid", y = "Frequency", fill = NULL) + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
+
+
+by_mp <- group_by(expenses2015, `MP's Name`)
+total_by_mp <- summarise(by_mp, count = n(),
+                total_claimed = sum(`Amount Claimed`))
+
+ototal_by_mp <- arrange(total_by_mp, desc(total_claimed))
+
+top10 <- slice(ototal_by_mp, 1:10)
+top10
+
+```
+
+
+
+# Further Developments
+
+* What do these MP's have in common?
+* Who claimed the most dodgy expenses?
+* Use genderizeR to predict Gender on the names?
+
+
+
+
+## The basics
+
+
+In this section, we will find the following statistics about our data:
+
+* Max Expense Claimed
+* Minimum Expense Claimed
+* Mean Expense Claimed
+
+
+To find the Max expense claimed, we can use the `max` function.
+
+```{r}
+
+maxclaimed <- max(expenses2015$`Amount Claimed`)
+formatted_max_claimed <- paste("£", format(maxclaimed, digits=10, nsmall=2, decimal.mark=".", big.mark=","), sep = "")
+
+whoclaimedmax <- which.max(expenses2015$`Amount Claimed`)
+
+most_expensive_claim <- expenses2015[whoclaimedmax,]
+
+kable(most_expensive_claim, format = "markdown")
+
+
+```
+
+So we can see that `r most_expensive_claim[4]` had the largest claim (of `r formatted_max_claimed`!). We can see this was for "`r most_expensive_claim[7]`"
+
+
+Let's now do the same for the smallest expense claimed.
+
+```{r}
+
+minclaimed <- min(expenses2015$`Amount Claimed`)
+who_claimed_min <- which.min(expenses2015$`Amount Claimed`)
+#least_expensive_claim <- expenses2015[who_claimed_min] commented out as it is broken
+```
+
+
+It seems we've hit an error. The smallest amount claimed is in fact a negative number! We should investigate to see what is happening here.
+
+```{r}
+
+hist(expenses2015$`Amount Claimed`)
+table(expenses2015$`Amount Claimed` < 0)
+
+```
+
+So there are currently 1874 expenses which have an `Amount Claimed` value of less than 0. Let's filter for these and have a deeper look.
+
+
+```{r}
+
+negative_claims <- filter(expenses2015, `Amount Claimed` < 0)
+kable(head(select(negative_claims, c(2:5, 16:17))))
+
+
+```
+
+
+Looking at the claims, we can see that they look like genuine expenses, but with a negative sign in front of them. So possible explanations could be:
+
+* Error in the data. To fix, we could just remove the "-" sign.
+* These may be correct expenses. We'd need to investigate the context for these further if that was the case.
