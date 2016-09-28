@@ -61,7 +61,7 @@ mean(ac_to_ap)
 table(ac_to_ap)
 rejected <- subset(expenses2015, !ac_to_ap)
 mean(rejected$`Amount Claimed`)
-str(rejected$`Reason If Not Paid`)
+
 
 #reasons why they weren't paid
 levels(rejected$`Reason If Not Paid`)
@@ -82,7 +82,7 @@ total_by_mp <- summarise(by_mp, count = n(),
 ototal_by_mp <- arrange(total_by_mp, desc(total_claimed))
 
 top10 <- slice(ototal_by_mp, 1:10)
-top10
+kable(top10, format = "markdown")
 
 ```
 
@@ -109,10 +109,31 @@ In this section, we will find the following statistics about our data:
 
 To find the Max expense claimed, we can use the `max` function.
 
+
+Before we do that however, let's make a quick helper function to print the numbers nicely as a currency
+
+Note that an alternative way (probably better) would be to create a "currency" class, and then creat a print.currency method that would automatically be called when our currency class was printed.
+
 ```{r}
 
-maxclaimed <- max(expenses2015$`Amount Claimed`)
-formatted_max_claimed <- paste("£", format(maxclaimed, digits=10, nsmall=2, decimal.mark=".", big.mark=","), sep = "")
+
+
+#Convert to Pounds
+
+# Takes a numeric and returns a string of the value in the format £X,XXX.XX
+
+con_to_pounds <- function(value, pence = T){
+    if(pence == T){
+        n_small <-  2
+    }else{
+        n_small <-  0
+    }
+    paste("£", format(value, digits=10, nsmall=n_small, decimal.mark=".", big.mark=","), sep = "")
+}
+
+max_claimed <- max(expenses2015$`Amount Claimed`)
+
+formatted_max_claimed <- con_to_pounds(max_claimed)
 
 whoclaimedmax <- which.max(expenses2015$`Amount Claimed`)
 
@@ -161,3 +182,70 @@ Looking at the claims, we can see that they look like genuine expenses, but with
 
 * Error in the data. To fix, we could just remove the "-" sign.
 * These may be correct expenses. We'd need to investigate the context for these further if that was the case.
+
+
+Having emailed IPSA (who provded the data), it appears that these negative expenses arise when an MP has been refunded for an expense, and so in turn has the expense refunded.
+
+An easy solution would be to filter out these negative values, as they're not relevant to what we're looking at currently.
+
+* We could investigate the refunded expenses to see if there is a pattern to them that differs from normal expenses.
+* We could in fact use these expenses to find their original claim, and then remove both.
+
+
+For now, let's just keep it simple and filter out the negative values
+
+```{r}
+
+expenses2015postive <- filter(expenses2015, `Amount Claimed` > 0)
+
+#Alternatively for our purposes, we could have just used expenses2015[expenses2015$`Amount Claimed` >= 0]
+```
+
+Now let's try again to find the smallest claim made
+
+```{r}
+
+minclaimed <- min(expenses2015postive$`Amount Claimed`)
+who_claimed_min <- which.min(expenses2015postive$`Amount Claimed`)
+
+least_expensive_claim <- expenses2015postive[who_claimed_min,]
+
+
+kable(least_expensive_claim)
+
+
+```
+
+## The average claim?
+
+In this section, we will find the value of the average claim. We'll also find the top 5 Expense types for approved and non approved claims.
+
+### Mean Claim and Mean Paid
+```{r}
+mean_claimed <- mean(expenses2015postive$`Amount Claimed`)
+mean_paid <- mean(expenses2015postive$`Amount Paid`)
+
+con_to_pounds(mean_claimed) # con_to_pounds clearly isn't perfect, as it's printing too many sig figs
+con_to_pounds(mean_paid) # same here
+
+
+```
+
+### Most common expense categories
+
+
+```{r}
+
+common_expense_types <- expenses2015postive %>%
+                        group_by(Category) %>% 
+                        dplyr::summarise(count = n(),
+                                         sum = con_to_pounds(sum(`Amount Claimed`)),
+                                        mean_claim = con_to_pounds(mean(`Amount Claimed`)))
+
+
+kable(arrange(common_expense_types, desc(count))[1:5,])
+
+```
+
+
+Whilst `r arrange(common_expense_types, desc(count))[1,1]` is the most common claim category, you can see that by total sum and mean claim, `r arrange(common_expense_types, desc(count))[1,1]`
