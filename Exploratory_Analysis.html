@@ -142,8 +142,6 @@ mean(ac_to_ap)</code></pre>
 <pre class="r"><code>rejected &lt;- subset(expenses2015, !ac_to_ap)
 mean(rejected$`Amount Claimed`)</code></pre>
 <pre><code>## [1] 90.95639</code></pre>
-<pre class="r"><code>str(rejected$`Reason If Not Paid`)</code></pre>
-<pre><code>##  Factor w/ 6 levels &quot;Duplicate Claim&quot;,..: 2 3 3 2 3 4 3 2 3 3 ...</code></pre>
 <pre class="r"><code>#reasons why they weren't paid
 levels(rejected$`Reason If Not Paid`)</code></pre>
 <pre><code>## [1] &quot;Duplicate Claim&quot;       &quot;Insufficient Evidence&quot; &quot;Not Under Scheme&quot;     
@@ -170,20 +168,68 @@ total_by_mp &lt;- summarise(by_mp, count = n(),
 ototal_by_mp &lt;- arrange(total_by_mp, desc(total_claimed))
 
 top10 &lt;- slice(ototal_by_mp, 1:10)
-top10</code></pre>
-<pre><code>## # A tibble: 10 × 3
-##         `MP's Name` count total_claimed
-##              &lt;fctr&gt; &lt;int&gt;         &lt;dbl&gt;
-## 1  Stewart McDonald   409      97395.64
-## 2     Joanna Cherry   377      96578.33
-## 3  Michelle Thomson   461      92230.74
-## 4     Paul Monaghan  1038      90003.89
-## 5     Angus MacNeil   636      89054.37
-## 6   Steven Paterson   803      88650.78
-## 7      Alex Salmond   364      84889.63
-## 8    Tommy Sheppard   366      84338.65
-## 9    Karl McCartney   402      82209.58
-## 10     Corri Wilson   555      81818.16</code></pre>
+kable(top10, format = &quot;markdown&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">MP’s Name</th>
+<th align="right">count</th>
+<th align="right">total_claimed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Stewart McDonald</td>
+<td align="right">409</td>
+<td align="right">97395.64</td>
+</tr>
+<tr class="even">
+<td align="left">Joanna Cherry</td>
+<td align="right">377</td>
+<td align="right">96578.33</td>
+</tr>
+<tr class="odd">
+<td align="left">Michelle Thomson</td>
+<td align="right">461</td>
+<td align="right">92230.74</td>
+</tr>
+<tr class="even">
+<td align="left">Paul Monaghan</td>
+<td align="right">1038</td>
+<td align="right">90003.89</td>
+</tr>
+<tr class="odd">
+<td align="left">Angus MacNeil</td>
+<td align="right">636</td>
+<td align="right">89054.37</td>
+</tr>
+<tr class="even">
+<td align="left">Steven Paterson</td>
+<td align="right">803</td>
+<td align="right">88650.78</td>
+</tr>
+<tr class="odd">
+<td align="left">Alex Salmond</td>
+<td align="right">364</td>
+<td align="right">84889.63</td>
+</tr>
+<tr class="even">
+<td align="left">Tommy Sheppard</td>
+<td align="right">366</td>
+<td align="right">84338.65</td>
+</tr>
+<tr class="odd">
+<td align="left">Karl McCartney</td>
+<td align="right">402</td>
+<td align="right">82209.58</td>
+</tr>
+<tr class="even">
+<td align="left">Corri Wilson</td>
+<td align="right">555</td>
+<td align="right">81818.16</td>
+</tr>
+</tbody>
+</table>
 <div id="further-developments" class="section level1">
 <h1>Further Developments</h1>
 <ul>
@@ -200,8 +246,24 @@ top10</code></pre>
 <li>Mean Expense Claimed</li>
 </ul>
 <p>To find the Max expense claimed, we can use the <code>max</code> function.</p>
-<pre class="r"><code>maxclaimed &lt;- max(expenses2015$`Amount Claimed`)
-formatted_max_claimed &lt;- paste(&quot;£&quot;, format(maxclaimed, digits=10, nsmall=2, decimal.mark=&quot;.&quot;, big.mark=&quot;,&quot;), sep = &quot;&quot;)
+<p>Before we do that however, let’s make a quick helper function to print the numbers nicely as a currency</p>
+<p>Note that an alternative way (probably better) would be to create a “currency” class, and then creat a print.currency method that would automatically be called when our currency class was printed.</p>
+<pre class="r"><code>#Convert to Pounds
+
+# Takes a numeric and returns a string of the value in the format £X,XXX.XX
+
+con_to_pounds &lt;- function(value, pence = T){
+    if(pence == T){
+        n_small &lt;-  2
+    }else{
+        n_small &lt;-  0
+    }
+    paste(&quot;£&quot;, format(value, digits=10, nsmall=n_small, decimal.mark=&quot;.&quot;, big.mark=&quot;,&quot;), sep = &quot;&quot;)
+}
+
+max_claimed &lt;- max(expenses2015$`Amount Claimed`)
+
+formatted_max_claimed &lt;- con_to_pounds(max_claimed)
 
 whoclaimedmax &lt;- which.max(expenses2015$`Amount Claimed`)
 
@@ -365,6 +427,144 @@ kable(head(select(negative_claims, c(2:5, 16:17))))</code></pre>
 <li>Error in the data. To fix, we could just remove the “-” sign.</li>
 <li>These may be correct expenses. We’d need to investigate the context for these further if that was the case.</li>
 </ul>
+<p>Having emailed IPSA (who provded the data), it appears that these negative expenses arise when an MP has been refunded for an expense, and so in turn has the expense refunded.</p>
+<p>An easy solution would be to filter out these negative values, as they’re not relevant to what we’re looking at currently.</p>
+<ul>
+<li>We could investigate the refunded expenses to see if there is a pattern to them that differs from normal expenses.</li>
+<li>We could in fact use these expenses to find their original claim, and then remove both.</li>
+</ul>
+<p>For now, let’s just keep it simple and filter out the negative values</p>
+<pre class="r"><code>expenses2015postive &lt;- filter(expenses2015, `Amount Claimed` &gt; 0)
+
+#Alternatively for our purposes, we could have just used expenses2015[expenses2015$`Amount Claimed` &gt;= 0]</code></pre>
+<p>Now let’s try again to find the smallest claim made</p>
+<pre class="r"><code>minclaimed &lt;- min(expenses2015postive$`Amount Claimed`)
+who_claimed_min &lt;- which.min(expenses2015postive$`Amount Claimed`)
+
+least_expensive_claim &lt;- expenses2015postive[who_claimed_min,]
+
+
+kable(least_expensive_claim)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">﻿Year</th>
+<th align="center">Date</th>
+<th align="right">Claim No.</th>
+<th align="center">MP’s Name</th>
+<th align="right">MP’s Constituency</th>
+<th align="right">Category</th>
+<th align="center">Expense Type</th>
+<th align="center">Short Description</th>
+<th align="right">Details</th>
+<th align="right">Journey Type</th>
+<th align="right">From</th>
+<th align="right">To</th>
+<th align="right">Travel</th>
+<th align="right">Nights</th>
+<th align="right">Mileage</th>
+<th align="right">Amount Claimed</th>
+<th align="right">Amount Paid</th>
+<th align="right">Amount Not Paid</th>
+<th align="right">Amount Repaid</th>
+<th align="right">Status</th>
+<th align="right">Reason If Not Paid</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">15_16</td>
+<td align="center">2016-02-29</td>
+<td align="right">493217</td>
+<td align="center">David Lammy</td>
+<td align="right">Tottenham BC</td>
+<td align="right">Staffing</td>
+<td align="center">Food &amp; Drink Volunteer</td>
+<td align="center">Allie Expenses Jan-March</td>
+<td align="right">Lunch</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">0.01</td>
+<td align="right">0.01</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">Paid</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="the-average-claim" class="section level2">
+<h2>The average claim?</h2>
+<p>In this section, we will find the value of the average claim. We’ll also find the top 5 Expense types for approved and non approved claims.</p>
+<div id="mean-claim-and-mean-paid" class="section level3">
+<h3>Mean Claim and Mean Paid</h3>
+<pre class="r"><code>mean_claimed &lt;- mean(expenses2015postive$`Amount Claimed`)
+mean_paid &lt;- mean(expenses2015postive$`Amount Paid`)
+
+con_to_pounds(mean_claimed) # con_to_pounds clearly isn't perfect, as it's printing too many sig figs</code></pre>
+<pre><code>## [1] &quot;£155.3801039&quot;</code></pre>
+<pre class="r"><code>con_to_pounds(mean_paid) # same here</code></pre>
+<pre><code>## [1] &quot;£155.2734003&quot;</code></pre>
+</div>
+<div id="most-common-expense-categories" class="section level3">
+<h3>Most common expense categories</h3>
+<pre class="r"><code>common_expense_types &lt;- expenses2015postive %&gt;%
+                        group_by(Category) %&gt;% 
+                        dplyr::summarise(count = n(),
+                                         sum = con_to_pounds(sum(`Amount Claimed`)),
+                                        mean_claim = con_to_pounds(mean(`Amount Claimed`)))
+
+
+kable(arrange(common_expense_types, desc(count))[1:5,])</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Category</th>
+<th align="right">count</th>
+<th align="left">sum</th>
+<th align="left">mean_claim</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Travel</td>
+<td align="right">92394</td>
+<td align="left">£4,645,719.66</td>
+<td align="left">£50.28161634</td>
+</tr>
+<tr class="even">
+<td align="left">Office Costs</td>
+<td align="right">57885</td>
+<td align="left">£11,593,849.11</td>
+<td align="left">£200.291079</td>
+</tr>
+<tr class="odd">
+<td align="left">Accommodation</td>
+<td align="right">11441</td>
+<td align="left">£7,252,998.08</td>
+<td align="left">£633.9479136</td>
+</tr>
+<tr class="even">
+<td align="left">Staffing</td>
+<td align="right">7190</td>
+<td align="left">£1,882,715.52</td>
+<td align="left">£261.8519499</td>
+</tr>
+<tr class="odd">
+<td align="left">Winding Up</td>
+<td align="right">2699</td>
+<td align="left">£684,615.49</td>
+<td align="left">£253.655239</td>
+</tr>
+</tbody>
+</table>
+<p>Whilst Travel is the most common claim category, you can see that by total sum and mean claim, Travel</p>
+</div>
 </div>
 </div>
 
