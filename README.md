@@ -12,6 +12,21 @@ The Independent Parlimentary Standards Authority [provides data](http://www.parl
 
 I thought it would be fun to practice my skills on it.
 
+My goals specifically were to utilise
+
+_Markdown_
+
+* Creating a markdown document
+* Utilise parameters to create document templates to be reused (Apply this md to multiple years of MP's expenses)
+
+_Dplyr_
+
+* Practice using the verbs of Dplyr for data manipulation
+
+_ggplot2_
+
+* Practice using ggplot2 to create interesting and clear visuals
+
 
 ###Links
 
