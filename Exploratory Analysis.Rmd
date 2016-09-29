@@ -12,6 +12,7 @@ library(readr)
 library(ggplot2)
 library(knitr)
 library(dplyr)
+library(lubridate)
 
 #Read in the 2015 Data
 
@@ -278,5 +279,41 @@ ggplot(common_rejected_expense_types) + geom_bar(aes(x = Category, y = sum, fill
 ```
 
 
+# Time Analysis 
+
+##Does the average expense claim vary across the months of the Year?
 
 
+To do this, we will use the `lubridate` library (good thing we loaded it earlier!).
+
+
+```{r expenses_by_month}
+
+expenses_by_month <- expenses2015 %>%
+                        filter(`Amount Claimed` > 0) %>%
+                        group_by(month(Date))
+  
+
+summary_expenses_by_month <- summarise(expenses_by_month , `Number of Claims` = n(), `Sum of Claims` = con_to_pounds(sum(`Amount Claimed`)))
+
+kable(summary_expenses_by_month)
+
+
+ggplot(expenses_by_month) + geom_bar(aes(x = month(Date), fill = Category)) + labs(x = "Month", y = "Number of Claims", title = "Bar graph to show the number of claims\n submitted by month")
+
+```
+
+Things to notice
+
+* The number of accomodation claims stays roughly constant across the month, with a slight peak in June, and a dip in August.
+* MP's Travel claims have a huge decease in April (and a slighlty less dramatic dip in August)
+* Claims for winding up are submitted between May and August.
+
+
+Let's make the same graph, but displaying the sum of the claims instead.
+
+```{r}
+
+## This graph is not correct!
+
+ggplot(expenses_by_month) + geom_bar(aes(x = `month(Date)`, y = `Amount Claimed`), stat = "sum") + labs(x = "Month", y = "Sum of Claims", title = "Bar graph to show the sum of claims\n submitted by month")
