@@ -316,4 +316,6 @@ Let's make the same graph, but displaying the sum of the claims instead.
 
 ## This graph is not correct!
 
-ggplot(expenses_by_month) + geom_bar(aes(x = `month(Date)`, y = `Amount Claimed`), stat = "sum") + labs(x = "Month", y = "Sum of Claims", title = "Bar graph to show the sum of claims\n submitted by month")
+ggplot(expenses_by_month) + geom_bar(aes(x = `month(Date)`, weight = `Amount Claimed`, fill = Category)) + labs(x = "Month", y = "Sum of Claims", title = "Bar graph to show the sum of claims\n submitted by month")
+
+                                     
