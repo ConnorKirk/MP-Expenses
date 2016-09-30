@@ -299,7 +299,7 @@ summary_expenses_by_month <- summarise(expenses_by_month , `Number of Claims` = 
 kable(summary_expenses_by_month)
 
 
-ggplot(expenses_by_month) + geom_bar(aes(x = month(Date), fill = Category)) + labs(x = "Month", y = "Number of Claims", title = "Bar graph to show the number of claims\n submitted by month")
+ggplot(expenses_by_month) + geom_bar(aes(x = month(Date), fill = Category)) + labs(x = "Month", y = "Number of Claims", title = "Bar graph to show the number of claims\n submitted by month") 
 
 ```
 
@@ -316,6 +316,8 @@ Let's make the same graph, but displaying the sum of the claims instead.
 
 ## This graph is not correct!
 
-ggplot(expenses_by_month) + geom_bar(aes(x = `month(Date)`, weight = `Amount Claimed`, fill = Category)) + labs(x = "Month", y = "Sum of Claims", title = "Bar graph to show the sum of claims\n submitted by month")
+
+
+ggplot(expenses_by_month) + geom_bar(aes(x = `month(Date)`, weight = `Amount Claimed`, fill = Category)) + labs(x = "Month", y = "Sum of Claims", title = "Bar graph to show the sum of claims\n submitted by month") + scale_y_continuous(labels = scales::dollar_format(suffix = "", prefix = "£"))
 
                                      
