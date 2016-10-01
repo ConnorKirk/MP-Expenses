@@ -28,6 +28,16 @@ _ggplot2_
 * Practice using ggplot2 to create interesting and clear visuals
 
 
+
+
+
+##Ideas & Thoughts to continue with
+
+* Make a function that given a name, will plot the expenses by month?
+* Who spent the most in each category?
+* Analysis of the From -- To Column?
+
+
 ###Links
 
 * [Exploratory Analysis](http://htmlpreview.github.com/?https://github.com/ConnorKirk/MP-Expenses/blob/master/Exploratory_Analysis.html)
