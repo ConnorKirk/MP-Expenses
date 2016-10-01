@@ -314,10 +314,37 @@ Let's make the same graph, but displaying the sum of the claims instead.
 
 ```{r}
 
-## This graph is not correct!
-
-
-
 ggplot(expenses_by_month) + geom_bar(aes(x = `month(Date)`, weight = `Amount Claimed`, fill = Category)) + labs(x = "Month", y = "Sum of Claims", title = "Bar graph to show the sum of claims\n submitted by month") + scale_y_continuous(labels = scales::dollar_format(suffix = "", prefix = "£"))
 
+```
+
+
+#Who is the cheekiest MP?
+
+Let's see how many rejected expenses each MP had.
+
+
+_To do_
+
+* Invesitgate how many rejected invoices there were.
+  * What(&Freq) categories were these?
+* Investigate expenses !(Paid OR Not Paid)
+*Filter to remove MP's with few, small claims.
+*Freq of rejected claims with any other factors?
+
+
+```{r rejected_expenses}
+
+reject_expenses <- expenses2015 %>%
+                      filter(Status == "Not Paid") %>%
+                    group_by(`MP's Name`)
+
+
+cheeky_mps <- summarise(reject_expenses, Freq = n(), Value = (sum(`Amount Claimed`)))
+              
+
+kable(arrange(cheeky_mps, desc(Freq))[1:10,])
+
+
+ggplot(reject_expenses) + geom_bar(aes(x = `MP's Name`, fill = Category)) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
                                      
