@@ -250,7 +250,7 @@ common_expense_types <- expenses2015postive %>%
                                         mean_claim = con_to_pounds(mean(`Amount Claimed`)))
 
 
-kable(arrange(common_expense_types, desc(count))[1:5,])
+arrange(common_expense_types, desc(count))[1:5,]
 
 ggplot(common_expense_types) + geom_bar(aes(x = Category, y = sum, fill = Category), stat = "identity") +labs(x = "Category of Expense", y = "Sum Claimed", fill = NULL) + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
 
@@ -357,5 +357,12 @@ ggplot(subset(reject_expenses, `MP's Name` %in% cheekiest_mps), aes(x = `MP's Na
                                        hjust = 1))
 
 
+ggplot(reject_expenses) + geom_jitter(aes( x = 1, y = `Amount Claimed`, col = `Reason If Not Paid`), alpha = 0.4)
+
+
 ```
+                                     
+                                     
+                                     
+                                     
                                      
