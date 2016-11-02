@@ -10,6 +10,17 @@ output: html_document
 
 The Independent Parlimentary Standards Authority [provides data](http://www.parliamentary-standards.org.uk/DataDownloads.aspx) for all expense claims made by MP's.  
 
+
+###Links
+
+* [Exploratory Analysis](http://htmlpreview.github.com/?https://github.com/ConnorKirk/MP-Expenses/blob/master/Exploratory_Analysis.html)
+
+* [Biggest Spender](http://htmlpreview.github.com/?https://github.com/ConnorKirk/MP-Expenses/blob/master/README.html)
+
+
+
+## What is this?
+
 I thought it would be fun to practice my skills on it.
 
 My goals specifically were to utilise
@@ -38,8 +49,5 @@ _ggplot2_
 * Analysis of the From -- To Column?
 
 
-###Links
-
-* [Exploratory Analysis](http://htmlpreview.github.com/?https://github.com/ConnorKirk/MP-Expenses/blob/master/Exploratory_Analysis.html)
 
 
