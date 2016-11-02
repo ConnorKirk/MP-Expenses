@@ -1,0 +1,109 @@
+---
+title: "Big Spenders"
+output:
+  html_notebook: default
+  html_document: default
+---
+
+
+
+##Introduction
+
+In this short piece, I will investigate the most obvious question - Who spent the most?
+
+-- Insert contents/explanation in Introduction
+
+
+##Libraries
+
+TODO - Why these libraries?
+
+```{r}
+library(dplyr)
+library(readr)
+library(ggplot2)
+```
+
+
+
+##Data Load
+
+I am using data from The Independent Parlimentary Standards Authority, who [provide data](http://www.parliamentary-standards.org.uk/DataDownloads.aspx) for all expense claims made by MP's, grouped by year.
+
+This analysis is using the 2015 expense claims csv.
+
+I'm able to set the type of some columns whilst reading in the data. Readr cannot individually set columns as factors though, so these are manually set following the load.
+
+
+TODO - Why am I converting some categories to factor. (answer - Can't load as factor using readr)
+
+
+```{r}
+
+#Read data to expenses 2015
+expenses2015 <- read_csv("Data/DataDownload_2015.csv", 
+                         col_types = cols(
+                                        Date = col_date(format = "%d/%m/%Y"),
+                                        `Claim No.` = col_character(),
+                                        `Reason If Not Paid` = col_character(),
+                                        `Amount Not Paid` = col_double()
+                                         )
+)
+
+
+# Convert some columns to factor
+
+#To do - Convert this to an elegant apply function...
+
+# List of columns to convert to factors - `MP's Name`, `MP's Constituency`, Category,`Expense Type`, From, To, Travel
+
+expenses2015$`MP's Name` <- as.factor(expenses2015$`MP's Name`)
+expenses2015$`MP's Constituency` <- as.factor(expenses2015$`MP's Constituency`)
+expenses2015$Category <- as.factor(expenses2015$Category)
+expenses2015$`Expense Type` <- as.factor(expenses2015$`Expense Type`)
+expenses2015$`MP's Name` <- as.factor(expenses2015$`MP's Name`)
+expenses2015$From <- as.factor(expenses2015$From)
+expenses2015$To <- as.factor(expenses2015$To)
+expenses2015$Travel <- as.factor(expenses2015$Travel)
+expenses2015$Status <- as.factor(expenses2015$Status)
+expenses2015$`Reason If Not Paid` <- as.factor(expenses2015$`Reason If Not Paid`)
+```
+
+
+
+
+###Analysis 1 - Largest Expense Claims by Category
+
+TODO - Add £ formatting to table and graph.
+TODO - Neaten x-axis labels (remove and use legend?)
+
+Using the `group_by` function from Hadley's `dplyr` package, we can group all our expense claims by category. Analysis of these groupings, such as mean, min, max, count and more advanced ideas can be explored.
+
+To begin with, we will look at the maximum value claimed by an MP in each category. We may also wish to explore the mean, or median expense claim. A jitter plot could also be a useful way to explore the patterns in the data.
+
+```{r}
+
+expense_by_category <- expenses2015 %>% group_by(Category)
+
+summarise(expense_by_category,  `Largest Claim (£)` = max(`Amount Claimed`), `Mean Claim (£)` = mean(`Amount Claimed`), `Median Claim (£)` = median(`Amount Claimed`), `Count of Claims` = n())
+
+```
+
+Whilst interesting, this isn't particularly insightful. Let's try visualising the data.
+
+Things to note
+
+* `geom_jitter` is the same as `geom_point` but with an inbuilt jitter, adding a slight element of random noise. This helps to visualise the data, spreading it out a little whilst maintaining the overall features.
+* You can see that we actually have some negative claims plotted. These represent "refunded expenses" by the MP.
+
+```{r}
+ggplot(data = expenses2015, aes(y = `Amount Claimed`, x = Category, col = Category)) + geom_jitter(alpha = 0.3) + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
+```
+This is a much clearer way to display the data. We can immediately see  the rough range, maximum claim and general trend of the data.
+
+
+###Analysis 2 - Largest Claims by Constituency
+
+###Analysis 3 - Largest Overall Claims (by Value and by Total)
+
+
