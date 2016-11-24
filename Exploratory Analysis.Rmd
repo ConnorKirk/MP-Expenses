@@ -95,6 +95,10 @@ kable(top10, format = "markdown")
 * What do these MP's have in common?
 * Who claimed the most dodgy expenses?
 * Use genderizeR to predict Gender on the names?
+* Is there any hiding of expenses by submitting lot's of small claims?
+* Comparison of averages by rough areas? Are some MP's mor expensive than others?
+* Which party has the highest average expense claim per year?
+* Parameterise these reports so that previous and new years can be easily investigated
 
 
 

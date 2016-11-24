@@ -1,0 +1,48 @@
+---
+title: "MP Constituency Data"
+output: html_notebook
+---
+
+##
+
+A quick demo of getting the MP Constituency information from [this wikipedia page using](https://en.wikipedia.org/wiki/List_of_United_Kingdom_Parliament_constituencies) `rvest`
+
+
+```{r}
+
+library(rvest)
+library(magrittr) # We use the extract2() function from this package
+
+
+url <- "http://en.wikipedia.org/wiki/List_of_United_Kingdom_Parliament_constituencies"
+
+constituencies <- read_html("http://en.wikipedia.org/wiki/List_of_United_Kingdom_Parliament_constituencies") %>%
+                  html_nodes("table") %>% #selects all table elements on the page
+                  extract2(2) %>% # We only want the second table element (there are 4 in total)
+                  html_table(fill = T)
+
+write.csv(file = "Data/constituencies.txt", x = constituencies)
+ 
+
+
+```
+
+
+##The Counties Shapefile
+
+```{r}
+
+library(rgdal)
+library(ggfortify)
+library(ggthemes)
+
+countiesshp <- readOGR(dsn = "Counties_and_Unitary_Authorities_December_2014_Full_Clipped_Boundaries_in_England_and_Wales",
+                      layer = "Counties_and_Unitary_Authorities_December_2014_Full_Clipped_Boundaries_in_England_and_Wales")
+
+counties <- fortify(countiesshp)
+
+ukmap <- ggplot(counties, aes(x = long, y = lat, group = group)) +
+geom_polygon(fill = "white", col = "black")
+
+ukmap + theme_map("mercator", base_size = 10)
+```

@@ -38,6 +38,10 @@ _ggplot2_
 
 * Practice using ggplot2 to create interesting and clear visuals
 
+_rvest_
+
+* Scrape data from the web
+
 
 
 
@@ -47,6 +51,7 @@ _ggplot2_
 * Make a function that given a name, will plot the expenses by month?
 * Who spent the most in each category?
 * Analysis of the From -- To Column?
+* Analysis of Business/First Class Travel
 
 
 

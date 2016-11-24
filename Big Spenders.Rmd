@@ -12,16 +12,25 @@ output:
 In this short piece, I will investigate the most obvious question - Who spent the most?
 
 -- Insert contents/explanation in Introduction
+-- Insert background on what the data is, why am I doing this?
+-- Make the piece self contained
 
 
 ##Libraries
 
 TODO - Why these libraries?
 
+_dplyr_
+
+_readr_
+
+_ggplot2_
+
 ```{r}
 library(dplyr)
 library(readr)
 library(ggplot2)
+
 ```
 
 
@@ -33,9 +42,6 @@ I am using data from The Independent Parlimentary Standards Authority, who [prov
 This analysis is using the 2015 expense claims csv.
 
 I'm able to set the type of some columns whilst reading in the data. Readr cannot individually set columns as factors though, so these are manually set following the load.
-
-
-TODO - Why am I converting some categories to factor. (answer - Can't load as factor using readr)
 
 
 ```{r}
@@ -67,12 +73,15 @@ expenses2015$To <- as.factor(expenses2015$To)
 expenses2015$Travel <- as.factor(expenses2015$Travel)
 expenses2015$Status <- as.factor(expenses2015$Status)
 expenses2015$`Reason If Not Paid` <- as.factor(expenses2015$`Reason If Not Paid`)
+
+
+
 ```
 
 
 
-
-###Analysis 1 - Largest Expense Claims by Category
+##Analysis
+### 1 - Largest Expense Claims by Category
 
 TODO - Add £ formatting to table and graph.
 TODO - Neaten x-axis labels (remove and use legend?)
@@ -102,8 +111,55 @@ ggplot(data = expenses2015, aes(y = `Amount Claimed`, x = Category, col = Catego
 This is a much clearer way to display the data. We can immediately see  the rough range, maximum claim and general trend of the data.
 
 
-###Analysis 2 - Largest Claims by Constituency
+### 2 - Largest Claims by Constituency
 
-###Analysis 3 - Largest Overall Claims (by Value and by Total)
+```{r}
+expense_by_constituency <- expenses2015 %>% group_by(`MP's Constituency`)
+
+summarise(expense_by_constituency,  `Largest Claim (£)` = max(`Amount Claimed`), `Mean Claim (£)` = mean(`Amount Claimed`), `Median Claim (£)` = median(`Amount Claimed`), `Count of Claims` = n())
+
+```
+
+#### 2.1 Going beyond constituency
+
+We can gather additional information on MP Constituencies from [this wikipedia page using](https://en.wikipedia.org/wiki/List_of_United_Kingdom_Parliament_constituencies) `rvest`
+
+I've saved the data to a local file `constituencies.txt` which we can work with.
+
+We'll need to massage the data so that it joins correctly on `Constituency`
+
+TO DO - Move data massaging to the appendix? Start with the prepped set?
+
+
+```{r}
+
+constits <- read_csv("Data/constituencies.txt")
+
+constits$Constituency <- as.factor(constits$Constituency)
+constits$`Largest ceremonial county or council area (Scotland)` <- as.factor(constits$`Largest ceremonial county or council area (Scotland)`)
+constits$`Country of the UK` <- as.factor(constits$`Country of the UK`)
+constits$Region <- as.factor(constits$Region)
+
+levels(constits$Constituency)[648] <- "Ynys Mon"
+
+
+# Use a fresh set of the data, avoiding complexities later on
+
+expenses2015v2 <- expenses2015
+
+names(expenses2015v2)[5] <- "Constituency"
+levels(expenses2015v2$Constituency) <- sub(" [BC]C", "", levels(expenses2015v2$Constituency))
+levels(expenses2015v2$Constituency)[645] <- "Ynys Mon"
+View(expenses2015v2)
+
+expenses2015v2 <- left_join(expenses2015v2, constits, by = "Constituency")
+
+
+ggplot(data = expenses2015v2, aes(x = Region, y = `Amount Claimed`, col = Category), alpha = 0.2) + geom_jitter() + theme()
+
+
+```
+
+### 3 - Largest Overall Claims (by Value and by Total)
 
 
